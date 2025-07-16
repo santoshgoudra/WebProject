@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Network Shield</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: url('{{ url_for('static', filename='images/back.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+           
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            width: 100%;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            padding: 20px 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            background-color: transparent;
+        }
+
+        .section {
+            background-color: #ffffff;
+            padding: 40px;
+            margin: 20px;
+            border-radius: 20px;
+            width: 350px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            background: linear-gradient(135deg, rgba(255,255,255,0), rgba(52,152,219,0.5));
+            z-index: -1;
+            filter: blur(20px);
+            border-radius: 25px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .section:hover::before {
+            opacity: 1;
+        }
+
+        h2 {
+            font-size: 1.75em;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+
+        textarea, input[type="text"], input[type="file"], button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea {
+            height: 120px;
+            resize: none;
+            background: #f9f9f9;
+        }
+
+        input[type="file"] {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .results {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .selection-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .section {
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Global Network Shield</h1>
+    </div>
+
+    <div class="container">
+        <!-- Send Message or Upload File Section -->
+        <div class="section" id="sendSection">
+            <h2>Send Message or Upload File</h2>
+            
+            <!-- Selection Buttons -->
+            <div class="selection-buttons">
+                <button id="selectMessage">Send Message</button>
+                <button id="selectFile">Upload File</button>
+            </div>
+            
+            <!-- Message Form -->
+            <div id="messageForm" class="hidden">
+                <textarea id="senderMessage" placeholder="Type your message here..."></textarea>
+                <input type="text" id="deviceIdInput" placeholder="Enter your device ID">
+                <button onclick="sendMessage()">Send Message</button>
+                <div id="sendResult" class="results"></div>
+            </div>
+            
+            <!-- File Upload Form -->
+            <div id="fileForm" class="hidden">
+                <input type="file" id="fileInput">
+                <input type="text" id="deviceIdInputFile" placeholder="Enter your device ID">
+                <button onclick="uploadFile()">Upload File</button>
+                <div id="uploadResult" class="results"></div>
+            </div>
+        </div>
+        
+        <!-- Receive Message and File Section -->
+        <div class="section">
+            <h2>Receive Message and File</h2>
+            <input type="text" id="deviceIdInputReceive" placeholder="Enter your device ID">
+            <input type="text" id="ivInput" placeholder="IV for decryption">
+            <button onclick="receiveMessage()">Receive Message and File</button>
+            <div id="receiveResult" class="results"></div>
+            <button id="downloadAttachment" style="display:none;" onclick="downloadFile()">Download Attached File</button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle selection for sending message
+            $('#selectMessage').click(function() {
+                $('#messageForm').removeClass('hidden');
+                $('#fileForm').addClass('hidden');
+                $(this).addClass('active');
+                $('#selectFile').removeClass('active');
+            });
+
+            // Handle selection for uploading file
+            $('#selectFile').click(function() {
+                $('#fileForm').removeClass('hidden');
+                $('#messageForm').addClass('hidden');
+                $(this).addClass('active');
+                $('#selectMessage').removeClass('active');
+            });
+        });
+
+        function sendMessage() {
+            var message = $('#senderMessage').val();
+            var deviceId = $('#deviceIdInput').val();
+
+            if (!deviceId) {
+                $('#sendResult').html('<span style="color:red;">Error: Device ID is required.</span>');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('device_id', deviceId);
+            formData.append('message', message);
+
+            $.ajax({
+                url: '/send_message_or_file',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function(data) {
+                    $('#sendResult').html(`Message sent successfully! IV: ${data.iv}`);
+                    $('#ivInput').val(data.iv);  // Store IV for the receiver
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#sendResult').html(`<span style="color:red;">Error: ${jqXHR.responseJSON.error || textStatus}</span>`);
+                }
+            });
+        }
+
+        function uploadFile() {
+            var file = $('#fileInput')[0].files[0];
+            var deviceId = $('#deviceIdInputFile').val();
+
+            if (!deviceId) {
+                $('#uploadResult').html('<span style="color:red;">Error: Device ID is required.</span>');
+                return;
+            }
+
+            if (!file) {
+                $('#uploadResult').html('<span style="color:red;">Error: No file selected.</span>');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('device_id', deviceId);
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/send_message_or_file',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function(data) {
+                    $('#uploadResult').html(`File uploaded successfully! IV: ${data.iv}`);
+                    $('#ivInput').val(data.iv);  // Store IV for the receiver
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#uploadResult').html(`<span style="color:red;">Error: ${jqXHR.responseJSON.error || textStatus}</span>`);
+                }
+            });
+        }
+
+        function receiveMessage() {
+            var iv = $('#ivInput').val();
+            var deviceId = $('#deviceIdInputReceive').val();
+
+            if (!iv || !deviceId) {
+                $('#receiveResult').html('<span style="color:red;">Error: Both Device ID and IV are required.</span>');
+                return;
+            }
+
+            $.ajax({
+                url: '/receive_message_or_file',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ device_id: deviceId, iv: iv }),
+                success: function(data) {
+                    var resultHtml = '';
+                    if (data.plaintext) {
+                        resultHtml += `<strong>Decrypted Message:</strong> ${data.plaintext}<br>`;
+                    }
+
+                    if (data.file_name) {
+                        resultHtml += `<strong>File available for download:</strong> <a href="/download_file/${data.file_name}" target="_blank">${data.file_name}</a>`;
+                        $('#downloadAttachment').hide(); // Hide download button as link is provided
+                    }
+
+                    $('#receiveResult').html(resultHtml);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#receiveResult').html(`<span style="color:red;">Error: ${jqXHR.responseJSON.error}</span>`);
+                }
+            });
+        }
+
+        function downloadFile() {
+            var fileName = $('#downloadAttachment').attr('data-file');
+
+            if (fileName) {
+                var a = document.createElement('a');
+                a.href = '/download_file/' + fileName;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                console.error("No file name specified for download.");
+            }
+        }
+    </script>
+
+</body>
+</html>
